@@ -44,7 +44,7 @@
 static wiz_NetInfo g_net_info =
     {
         .mac = {0x00, 0x08, 0xDC, 0x12, 0x34, 0x56}, // MAC address
-        .ip = {192, 168, 11, 100},                     // IP address
+        .ip = {192, 168, 11, 2},                     // IP address
         .sn = {255, 255, 255, 0},                    // Subnet Mask
         .gw = {192, 168, 11, 1},                     // Gateway
         .dns = {8, 8, 8, 8},                         // DNS server
@@ -77,10 +77,6 @@ int main()
     set_clock_khz();
 
     stdio_init_all();
-
-    #if 1
-    printf("Start W6100-EVB-Pico\n");
-    #endif
 
     wizchip_spi_initialize();
     wizchip_cris_initialize();
