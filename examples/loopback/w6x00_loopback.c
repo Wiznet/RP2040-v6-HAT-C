@@ -30,10 +30,18 @@
 #define ETHERNET_BUF_MAX_SIZE (1024 * 2)
 
 /* Socket */
-#define SOCKET_LOOPBACK 0
+#define SOCKET_TCP_SERVER 0
+#define SOCKET_TCP_CLIENT 1
+#define SOCKET_UDP 2
 
 /* Port */
-#define PORT_LOOPBACK 5000
+#define PORT_TCP_SERVER 5000
+#define PORT_TCP_CLIENT 5001
+#define PORT_UDP 5002
+
+#define TCP_SERVER
+#define TCP_CLIENT
+#define UDP
 
 /**
  * ----------------------------------------------------------------------------------------------------
@@ -51,8 +59,21 @@ static wiz_NetInfo g_net_info =
         .ipmode = NETINFO_STATIC_V4                  // DHCP enable/disable
 };
 
+uint8_t tcp_client_destip[] = {
+    192, 168, 11, 3
+};
+
+uint16_t tcp_client_destport = 5003;
+
 /* Loopback */
 static uint8_t g_loopback_buf[ETHERNET_BUF_MAX_SIZE] = {
+static uint8_t g_tcp_server_buf[ETHERNET_BUF_MAX_SIZE] = {
+    0,
+};
+static uint8_t g_tcp_client_buf[ETHERNET_BUF_MAX_SIZE] = {
+    0,
+};
+static uint8_t g_udp_buf[ETHERNET_BUF_MAX_SIZE] = {
     0,
 };
 
@@ -78,6 +99,12 @@ int main()
 
     stdio_init_all();
 
+    sleep_ms(1000 * 3);
+
+    printf("======================================\n");
+    printf("Compiled @ %s, %s\n", __DATE__, __TIME__);
+    printf("======================================\n");
+
     wizchip_spi_initialize();
     wizchip_cris_initialize();
 
@@ -93,14 +120,36 @@ int main()
     /* Infinite loop */
     while (1)
     {
+#ifdef TCP_SERVER
         /* TCP server loopback test */
-        if ((retval = loopback_tcps(SOCKET_LOOPBACK, g_loopback_buf, PORT_LOOPBACK, AS_IPV4)) < 0)
+        if ((retval = loopback_tcps(SOCKET_TCP_SERVER, g_tcp_server_buf, PORT_TCP_SERVER, AS_IPV4)) < 0)
         {
-            printf(" Loopback error : %d\n", retval);
+            printf(" loopback_tcps error : %d\n", retval);
 
             while (1)
                 ;
         }
+#endif
+#ifdef TCP_CLIENT
+        /* TCP client loopback test */
+        if ((retval = loopback_tcpc(SOCKET_TCP_CLIENT, g_tcp_client_buf, tcp_client_destip, tcp_client_destport, AS_IPV4)) < 0)
+        {
+            printf(" loopback_tcpc error : %d\n", retval);
+
+            while (1)
+                ;
+        }
+#endif
+#ifdef UDP
+        /* UDP loopback test */
+        if ((retval = loopback_udps(SOCKET_UDP, g_udp_buf, PORT_UDP, AS_IPV4)) < 0)
+        {
+            printf(" loopback_udps error : %d\n", retval);
+
+            while (1)
+                ;
+        }
+#endif
     }
 }
 
