@@ -33,15 +33,26 @@
 #define SOCKET_TCP_SERVER 0
 #define SOCKET_TCP_CLIENT 1
 #define SOCKET_UDP 2
+#define SOCKET_TCP_SERVER6 3
+#define SOCKET_TCP_CLIENT6 4
+#define SOCKET_UDP6 5
 
 /* Port */
 #define PORT_TCP_SERVER 5000
 #define PORT_TCP_CLIENT 5001
 #define PORT_UDP 5002
+#define PORT_TCP_SERVER6 5004
+#define PORT_TCP_CLIENT6 5005
+#define PORT_UDP6 5006
 
+#define IPV4
+#define IPV6
 #define TCP_SERVER
 #define TCP_CLIENT
 #define UDP
+#define TCP_SERVER6
+#define TCP_CLIENT6
+#define UDP6
 
 /**
  * ----------------------------------------------------------------------------------------------------
@@ -56,17 +67,49 @@ static wiz_NetInfo g_net_info =
         .sn = {255, 255, 255, 0},                    // Subnet Mask
         .gw = {192, 168, 11, 1},                     // Gateway
         .dns = {8, 8, 8, 8},                         // DNS server
-        .ipmode = NETINFO_STATIC_V4                  // DHCP enable/disable
+#ifdef IPV6
+        .lla = {0xfe, 0x80, 0x00, 0x00,
+                0x00, 0x00, 0x00, 0x00,
+                0x02, 0x08, 0xdc, 0xff,
+                0xfe, 0x57, 0x57, 0x25},             // Link Local Address
+        .gua = {0x00, 0x00, 0x00, 0x00,
+                0x00, 0x00, 0x00, 0x00,
+                0x00, 0x00, 0x00, 0x00,
+                0x00, 0x00, 0x00, 0x00},             // Global Unicast Address
+        .sn6 = {0xff, 0xff, 0xff, 0xff,
+                0xff, 0xff, 0xff, 0xff,
+                0x00, 0x00, 0x00, 0x00,
+                0x00, 0x00, 0x00, 0x00},             // IPv6 Prefix
+        .gw6 = {0x00, 0x00, 0x00, 0x00,
+                0x00, 0x00, 0x00, 0x00,
+                0x00, 0x00, 0x00, 0x00,
+                0x00, 0x00, 0x00, 0x00},             // Gateway IPv6 Address
+#endif
+#if defined IPV4 && defined IPV6
+        .ipmode = NETINFO_STATIC_ALL                 // Static IPv4 / IPv6
+#elif defined IPV4
+        .ipmode = NETINFO_STATIC_V4                  // Static IPv4
+#elif defined IPV6
+        .ipmode = NETINFO_STATIC_V6                  // Static IPv6
+#endif
 };
 
 uint8_t tcp_client_destip[] = {
     192, 168, 11, 3
 };
 
+uint8_t tcp_client_destip6[] = {
+    0xfe, 0x80, 0x00, 0x00,
+    0x00, 0x00, 0x00, 0x00,
+    0x02, 0x08, 0xdc, 0xff,
+    0xfe, 0x57, 0x57, 0x24
+};
+
 uint16_t tcp_client_destport = 5003;
 
+uint16_t tcp_client_destport6 = 5007;
+
 /* Loopback */
-static uint8_t g_loopback_buf[ETHERNET_BUF_MAX_SIZE] = {
 static uint8_t g_tcp_server_buf[ETHERNET_BUF_MAX_SIZE] = {
     0,
 };
@@ -74,6 +117,15 @@ static uint8_t g_tcp_client_buf[ETHERNET_BUF_MAX_SIZE] = {
     0,
 };
 static uint8_t g_udp_buf[ETHERNET_BUF_MAX_SIZE] = {
+    0,
+};
+static uint8_t g_tcp_server6_buf[ETHERNET_BUF_MAX_SIZE] = {
+    0,
+};
+static uint8_t g_tcp_client6_buf[ETHERNET_BUF_MAX_SIZE] = {
+    0,
+};
+static uint8_t g_udp6_buf[ETHERNET_BUF_MAX_SIZE] = {
     0,
 };
 
@@ -101,9 +153,9 @@ int main()
 
     sleep_ms(1000 * 3);
 
-    printf("======================================\n");
+    printf("==========================================================\n");
     printf("Compiled @ %s, %s\n", __DATE__, __TIME__);
-    printf("======================================\n");
+    printf("==========================================================\n");
 
     wizchip_spi_initialize();
     wizchip_cris_initialize();
@@ -145,6 +197,36 @@ int main()
         if ((retval = loopback_udps(SOCKET_UDP, g_udp_buf, PORT_UDP, AS_IPV4)) < 0)
         {
             printf(" loopback_udps error : %d\n", retval);
+
+            while (1)
+                ;
+        }
+#endif
+#ifdef TCP_SERVER6
+        /* TCP server loopback test */
+        if ((retval = loopback_tcps(SOCKET_TCP_SERVER6, g_tcp_server6_buf, PORT_TCP_SERVER6, AS_IPV6)) < 0)
+        {
+            printf(" loopback_tcps IPv6 error : %d\n", retval);
+
+            while (1)
+                ;
+        }
+#endif
+#ifdef TCP_CLIENT6
+        /* TCP client loopback test */
+        if ((retval = loopback_tcpc(SOCKET_TCP_CLIENT6, g_tcp_client6_buf, tcp_client_destip6, tcp_client_destport6, AS_IPV6)) < 0)
+        {
+            printf(" loopback_tcpc IPv6 error : %d\n", retval);
+
+            while (1)
+                ;
+        }
+#endif
+#ifdef UDP6
+        /* UDP loopback test */
+        if ((retval = loopback_udps(SOCKET_UDP6, g_udp6_buf, PORT_UDP6, AS_IPV6)) < 0)
+        {
+            printf(" loopback_udps IPv6 error : %d\n", retval);
 
             while (1)
                 ;

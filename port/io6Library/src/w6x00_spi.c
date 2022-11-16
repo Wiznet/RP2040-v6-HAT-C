@@ -284,12 +284,12 @@ void print_network_information(wiz_NetInfo net_info)
 
     if (net_info.ipmode == NETINFO_DHCP_V4)
     {
-        printf("====================================================================================================\n");
+        printf("==========================================================\n");
         printf(" %s network configuration : DHCP\n\n", (char *)tmp_str);
     }
     else
     {
-        printf("====================================================================================================\n");
+        printf("==========================================================\n");
         printf(" %s network configuration : static\n\n", (char *)tmp_str);
     }
 
@@ -298,5 +298,18 @@ void print_network_information(wiz_NetInfo net_info)
     printf(" Subnet Mask : %d.%d.%d.%d\n", net_info.sn[0], net_info.sn[1], net_info.sn[2], net_info.sn[3]);
     printf(" Gateway     : %d.%d.%d.%d\n", net_info.gw[0], net_info.gw[1], net_info.gw[2], net_info.gw[3]);
     printf(" DNS         : %d.%d.%d.%d\n", net_info.dns[0], net_info.dns[1], net_info.dns[2], net_info.dns[3]);
-    printf("====================================================================================================\n\n");
+    print_ipv6_addr(" GW6 ", net_info.gw6);
+	print_ipv6_addr(" LLA ", net_info.lla);
+	print_ipv6_addr(" GUA ", net_info.gua);
+	print_ipv6_addr(" SUB6", net_info.sn6);
+    printf("==========================================================\n\n");
+}
+
+void print_ipv6_addr(uint8_t* name, uint8_t* ip6addr)
+{
+	printf("%s        : ", name);
+	printf("%04X:%04X", ((uint16_t)ip6addr[0] << 8) | ((uint16_t)ip6addr[1]), ((uint16_t)ip6addr[2] << 8) | ((uint16_t)ip6addr[3]));
+	printf(":%04X:%04X", ((uint16_t)ip6addr[4] << 8) | ((uint16_t)ip6addr[5]), ((uint16_t)ip6addr[6] << 8) | ((uint16_t)ip6addr[7]));
+	printf(":%04X:%04X", ((uint16_t)ip6addr[8] << 8) | ((uint16_t)ip6addr[9]), ((uint16_t)ip6addr[10] << 8) | ((uint16_t)ip6addr[11]));
+	printf(":%04X:%04X\r\n", ((uint16_t)ip6addr[12] << 8) | ((uint16_t)ip6addr[13]), ((uint16_t)ip6addr[14] << 8) | ((uint16_t)ip6addr[15]));
 }
