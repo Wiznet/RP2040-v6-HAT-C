@@ -17,6 +17,7 @@
 #include "w6x00_spi.h"
 
 #include "loopback.h"
+#include "AddressAutoConfig.h"
 
 /**
  * ----------------------------------------------------------------------------------------------------
@@ -47,12 +48,17 @@
 
 #define IPV4
 #define IPV6
+#ifdef IPV4
 #define TCP_SERVER
 #define TCP_CLIENT
 #define UDP
+#endif
+#ifdef IPV6
 #define TCP_SERVER6
 #define TCP_CLIENT6
 #define UDP6
+#define ADDRS_AUTO_CONFIG
+#endif
 
 /**
  * ----------------------------------------------------------------------------------------------------
@@ -168,6 +174,16 @@ int main()
 
     /* Get network information */
     print_network_information(g_net_info);
+
+    #ifdef ADDRS_AUTO_CONFIG
+    if(g_net_info.ipmode == NETINFO_SLAAC_V6)
+    {
+        if(1 != AddressAutoConfig_Init(&g_net_info))
+        {
+            printf("Address Auto Config failed\n");
+        }
+    }
+    #endif
 
     /* Infinite loop */
     while (1)
