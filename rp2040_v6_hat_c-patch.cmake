@@ -10,13 +10,13 @@ endif()
 
 message("RP2040-v6-HAT-C patch utils found")
 
-set(RP2040_HAT_C_SRC_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
-set(IO6LIBRARY_SRC_DIR "${RP2040_HAT_C_SRC_DIR}/libraries/io6Library")
-set(MBEDTLS_SRC_DIR "${RP2040_HAT_C_SRC_DIR}/libraries/mbedtls")
-set(PICO_EXTRAS_SRC_DIR "${RP2040_HAT_C_SRC_DIR}/libraries/pico-extras")
-set(PICO_SDK_SRC_DIR "${RP2040_HAT_C_SRC_DIR}/libraries/pico-sdk")
-set(PICO_SDK_TINYUSB_SRC_DIR "${RP2040_HAT_C_SRC_DIR}/libraries/lib/tinyusb")
-set(RP2040_HAT_C_PATCH_DIR "${RP2040_HAT_C_SRC_DIR}/patches")
+set(RP2040_V6_HAT_C_SRC_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
+set(IO6LIBRARY_SRC_DIR "${RP2040_V6_HAT_C_SRC_DIR}/libraries/io6Library")
+set(MBEDTLS_SRC_DIR "${RP2040_V6_HAT_C_SRC_DIR}/libraries/mbedtls")
+set(PICO_EXTRAS_SRC_DIR "${RP2040_V6_HAT_C_SRC_DIR}/libraries/pico-extras")
+set(PICO_SDK_SRC_DIR "${RP2040_V6_HAT_C_SRC_DIR}/libraries/pico-sdk")
+set(PICO_SDK_TINYUSB_SRC_DIR "${RP2040_V6_HAT_C_SRC_DIR}/libraries/lib/tinyusb")
+set(RP2040_HAT_C_PATCH_DIR "${RP2040_V6_HAT_C_SRC_DIR}/patches")
 
 # Delete untracked files in io6Library
 if(EXISTS "${IO6LIBRARY_SRC_DIR}/.git")
@@ -50,7 +50,7 @@ if(EXISTS "${PICO_SDK_SRC_DIR}/.git")
 	message("pico-sdk cleaned")
 endif()
 
-execute_process(COMMAND ${GIT_EXECUTABLE} -C ${RP2040_HAT_C_SRC_DIR} submodule update --init)
+execute_process(COMMAND ${GIT_EXECUTABLE} -C ${RP2040_V6_HAT_C_SRC_DIR} submodule update --init)
 
 # Delete untracked files in tinyusb
 if(EXISTS "${PICO_SDK_TINYUSB_SRC_DIR}/.git")
