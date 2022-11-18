@@ -55,3 +55,20 @@ target_include_directories(DHCP4_FILES PUBLIC
         ${WIZNET_DIR}/Ethernet
         ${WIZNET_DIR}/Internet/DHCP4
         )
+
+# DHCP6
+add_library(DHCP6_FILES STATIC)
+
+target_sources(DHCP6_FILES PUBLIC
+        ${WIZNET_DIR}/Internet/DHCP6/dhcpv6.c
+        )
+
+target_include_directories(DHCP6_FILES PUBLIC
+        ${WIZNET_DIR}/Ethernet
+        ${WIZNET_DIR}/Ethernet/W6100
+        ${WIZNET_DIR}/Internet/DHCP6
+        )
+
+target_link_libraries(ETHERNET_FILES PUBLIC
+        W6100_FILES
+        )
