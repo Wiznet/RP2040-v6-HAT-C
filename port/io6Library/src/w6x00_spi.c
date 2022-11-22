@@ -282,16 +282,8 @@ void print_network_information(wiz_NetInfo net_info)
     ctlnetwork(CN_GET_NETINFO, (void *)&net_info);
     ctlwizchip(CW_GET_ID, (void *)tmp_str);
 
-    if (net_info.ipmode == NETINFO_DHCP_V4)
-    {
-        printf("==========================================================\n");
-        printf(" %s network configuration : DHCP\n\n", (char *)tmp_str);
-    }
-    else
-    {
-        printf("==========================================================\n");
-        printf(" %s network configuration : static\n\n", (char *)tmp_str);
-    }
+    printf("==========================================================\n");
+    printf(" %s network configuration\n\n", (char *)tmp_str);
 
     printf(" MAC         : %02X:%02X:%02X:%02X:%02X:%02X\n", net_info.mac[0], net_info.mac[1], net_info.mac[2], net_info.mac[3], net_info.mac[4], net_info.mac[5]);
     printf(" IP          : %d.%d.%d.%d\n", net_info.ip[0], net_info.ip[1], net_info.ip[2], net_info.ip[3]);

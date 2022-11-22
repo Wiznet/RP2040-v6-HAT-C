@@ -1,4 +1,4 @@
-set(TARGET_NAME w6x00_loopback)
+set(TARGET_NAME w6x00_AAC)
 
 add_executable(${TARGET_NAME}
         ${TARGET_NAME}.c

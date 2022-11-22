@@ -53,6 +53,7 @@ target_sources(DHCP4_FILES PUBLIC
 
 target_include_directories(DHCP4_FILES PUBLIC
         ${WIZNET_DIR}/Ethernet
+        ${WIZNET_DIR}/Ethernet/W6100
         ${WIZNET_DIR}/Internet/DHCP4
         )
 
@@ -67,6 +68,23 @@ target_include_directories(DHCP6_FILES PUBLIC
         ${WIZNET_DIR}/Ethernet
         ${WIZNET_DIR}/Ethernet/W6100
         ${WIZNET_DIR}/Internet/DHCP6
+        )
+
+target_link_libraries(ETHERNET_FILES PUBLIC
+        W6100_FILES
+        )
+
+# DNS
+add_library(DNS_FILES STATIC)
+
+target_sources(DNS_FILES PUBLIC
+        ${WIZNET_DIR}/Internet/DNS/dns.c
+        )
+
+target_include_directories(DNS_FILES PUBLIC
+        ${WIZNET_DIR}/Ethernet
+        ${WIZNET_DIR}/Ethernet/W6100
+        ${WIZNET_DIR}/Internet/DNS
         )
 
 target_link_libraries(ETHERNET_FILES PUBLIC

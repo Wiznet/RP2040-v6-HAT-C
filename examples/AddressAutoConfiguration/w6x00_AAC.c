@@ -22,6 +22,8 @@
 
 #include "timer.h"
 
+#include "dns.h"
+
 /**
  * ----------------------------------------------------------------------------------------------------
  * Macros
@@ -40,8 +42,8 @@
 #define SOCKET_TCP_SERVER6 3
 #define SOCKET_TCP_CLIENT6 4
 #define SOCKET_UDP6 5
-#define SOCKET_TCP_SERVER_DUAL 6
-#define SOCKET_DHCP 7
+#define SOCKET_DHCP 6
+#define SOCKET_DNS 7
 
 /* Port */
 #define PORT_TCP_SERVER 5000
@@ -54,8 +56,6 @@
 #define PORT_TCP_CLIENT6_DEST 5006
 #define PORT_UDP6 5007
 
-#define PORT_TCP_SERVER_DUAL 5008
-
 #define IPV4
 #define IPV6
 
@@ -65,6 +65,7 @@
 #define UDP
 #define DHCP_RETRY_COUNT 5
 #define DHCP4
+#define DNS
 #endif
 
 #ifdef IPV6
@@ -74,9 +75,7 @@
 #define ADDRS_AUTO_CONFIG
 #endif
 
-#if defined IPV4 && defined IPV6
-#define TCP_SERVER_DUAL
-#endif
+#define DNS_RETRY_COUNT 5
 
 /**
  * ----------------------------------------------------------------------------------------------------
@@ -152,12 +151,21 @@ static uint8_t g_tcp_client6_buf[ETHERNET_BUF_MAX_SIZE] = {
 static uint8_t g_udp6_buf[ETHERNET_BUF_MAX_SIZE] = {
     0,
 };
-static uint8_t g_tcp_server_dual_buf[ETHERNET_BUF_MAX_SIZE] = {
-    0,
-};
 
 /* DHCP */
 static uint8_t g_dhcp_get_ip_flag = 0;
+
+/* DNS */
+static uint8_t g_dns_target_domain[] = "www.wiznet.io";
+static uint8_t g_dns_target_ip[4] = {
+    0,
+};
+static uint8_t g_dns6_target_domain[] = "www.google.com";
+static uint8_t g_dns6_target_ip[16] = {
+    0,
+};
+static uint8_t g_dns_get_ip_flag = 0;
+uint8_t IP_TYPE;
 
 /* Timer */
 static volatile uint16_t g_msec_cnt = 0;
@@ -207,8 +215,6 @@ int main()
     wizchip_initialize();
     wizchip_check();
 
-    wizchip_1ms_timer_initialize(repeating_timer_callback);
-
     #ifdef DHCP4
     g_net_info.ipmode = NETINFO_DHCP_V4;
     #else
@@ -245,6 +251,10 @@ int main()
     }
     #else
     g_dhcp_get_ip_flag = 1;
+    #endif
+
+    #ifdef DNS
+    DNS_init(g_ethernet_buf);
     #endif
 
     /* Infinite loop */
@@ -355,16 +365,86 @@ int main()
                     ;
             }
 #endif
-#ifdef TCP_SERVER_DUAL
-            /* TCP server dual loopback test */
-            if ((retval = loopback_tcps(SOCKET_TCP_SERVER_DUAL, g_tcp_server_dual_buf, PORT_TCP_SERVER_DUAL, AS_IPDUAL)) < 0)
-            {
-                printf(" loopback_tcps dual error : %d\n", retval);
 
-                while (1)
-                    ;
-            }
+            #ifdef DNS
+            /* Get IP through DNS */
+            if (g_dns_get_ip_flag == 0)
+            {
+                IP_TYPE = 0x1;
+                if (DNS_run(SOCKET_DNS, g_net_info.dns, g_dns_target_domain, g_dns_target_ip, AS_IPV4) > 0)
+                {
+                    printf(" DNS success\n");
+                    printf(" Target domain : %s\n", g_dns_target_domain);
+                    printf(" IP of target domain : %d.%d.%d.%d\n", g_dns_target_ip[0], g_dns_target_ip[1], g_dns_target_ip[2], g_dns_target_ip[3]);
+
+                    IP_TYPE = 0x1c;
+                    if (DNS_run(SOCKET_DNS, g_net_info.dns, g_dns6_target_domain, g_dns6_target_ip, AS_IPV4) > 0)
+                    {
+                        printf(" DNS success\n");
+                        printf(" Target domain : %s\n", g_dns6_target_domain);
+                        printf(" IP of target domain : %.2x%.2x:%.2x%.2x:%.2x%.2x:%.2x%.2x:%.2x%.2x:%.2x%.2x:%.2x%.2x:%.2x%.2x\n"
+                        , g_dns6_target_ip[0], g_dns6_target_ip[1], g_dns6_target_ip[2], g_dns6_target_ip[3]
+                        , g_dns6_target_ip[4], g_dns6_target_ip[5], g_dns6_target_ip[6], g_dns6_target_ip[7]
+                        , g_dns6_target_ip[8], g_dns6_target_ip[9], g_dns6_target_ip[10], g_dns6_target_ip[11]
+                        , g_dns6_target_ip[12], g_dns6_target_ip[13], g_dns6_target_ip[14], g_dns6_target_ip[15]
+                        );
+
+                        printf(" DNS Done\n");
+                        g_dns_get_ip_flag = 1;
+                    }
+// If you have an available network through IPv6.
+//#ifdef IPV6
+#if 0
+                    g_dns_get_ip_flag = 0;
+
+                    IP_TYPE = 0x1;
+                    if (DNS_run(SOCKET_DNS, g_net_info.dns6, g_dns6_target_domain, g_dns_target_ip, AS_IPV6) > 0)
+                    {
+                        printf(" DNS6 success\n");
+                        printf(" Target domain : %s\n", g_dns6_target_domain);
+                        printf(" IP of target domain : %d.%d.%d.%d\n", g_dns_target_ip[0], g_dns_target_ip[1], g_dns_target_ip[2], g_dns_target_ip[3]);
+
+                        IP_TYPE = 0x1c;
+                        if (DNS_run(SOCKET_DNS, g_net_info.dns6, g_dns6_target_domain, g_dns6_target_ip, AS_IPV6) > 0)
+                        {
+                            printf(" DNS6 success\n");
+                            printf(" Target domain : %s\n", g_dns6_target_domain);
+                            printf(" IP of target domain : %.2x%.2x:%.2x%.2x:%.2x%.2x:%.2x%.2x:%.2x%.2x:%.2x%.2x:%.2x%.2x:%.2x%.2x\n"
+                            , g_dns6_target_ip[0], g_dns6_target_ip[1], g_dns6_target_ip[2], g_dns6_target_ip[3]
+                            , g_dns6_target_ip[4], g_dns6_target_ip[5], g_dns6_target_ip[6], g_dns6_target_ip[7]
+                            , g_dns6_target_ip[8], g_dns6_target_ip[9], g_dns6_target_ip[10], g_dns6_target_ip[11]
+                            , g_dns6_target_ip[12], g_dns6_target_ip[13], g_dns6_target_ip[14], g_dns6_target_ip[15]
+                            );
+
+                            g_dns_get_ip_flag = 1;
+                        }
+                    }
 #endif
+                }
+                else
+                {
+                    dns_retry++;
+
+                    if (dns_retry <= DNS_RETRY_COUNT)
+                    {
+                        printf(" DNS timeout occurred and retry %d\n", dns_retry);
+                    }
+                }
+
+                if (dns_retry > DNS_RETRY_COUNT)
+                {
+                    printf(" DNS failed\n");
+
+                    while (1)
+                        ;
+                }
+                
+                if(g_dns_get_ip_flag == 0)
+                {
+                    wizchip_delay_ms(1000); // wait for 1 second
+                }
+            }
+            #endif
         }
     }
 }
@@ -433,5 +513,6 @@ static void repeating_timer_callback(void)
         g_msec_cnt = 0;
 
         DHCP_time_handler();
+        DNS_time_handler();
     }
 }
