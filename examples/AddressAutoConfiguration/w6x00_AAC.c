@@ -512,7 +512,7 @@ static void repeating_timer_callback(void)
     {
         g_msec_cnt = 0;
 
-        DHCP_time_handler();
+        DHCPv4_time_handler();
         DNS_time_handler();
     }
 }
