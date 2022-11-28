@@ -2,7 +2,6 @@ set(TARGET_NAME w6x00_loopback)
 
 add_executable(${TARGET_NAME}
         ${TARGET_NAME}.c
-        AddressAutoConfig.c
         )
 
 target_link_libraries(${TARGET_NAME} PRIVATE
@@ -12,10 +11,7 @@ target_link_libraries(${TARGET_NAME} PRIVATE
         ETHERNET_FILES
         IOLIBRARY_FILES
         LOOPBACK_FILES
-        DHCP4_FILES
-        DHCP6_FILES
         TIMER_FILES
-        DNS_FILES
         )
 
 pico_enable_stdio_usb(${TARGET_NAME} 1)

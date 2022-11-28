@@ -17,8 +17,6 @@
 #include "w6x00_spi.h"
 
 #include "loopback.h"
-#include "AddressAutoConfig.h"
-#include "dhcpv4.h"
 
 #include "timer.h"
 
@@ -63,20 +61,19 @@
 #define TCP_SERVER
 #define TCP_CLIENT
 #define UDP
-#define DHCP_RETRY_COUNT 5
-#define DHCP4
 #endif
 
 #ifdef IPV6
 #define TCP_SERVER6
 #define TCP_CLIENT6
 #define UDP6
-#define ADDRS_AUTO_CONFIG
 #endif
 
 #if defined IPV4 && defined IPV6
 #define TCP_SERVER_DUAL
 #endif
+
+#define RETRY_CNT   10000
 
 /**
  * ----------------------------------------------------------------------------------------------------
@@ -111,7 +108,7 @@ static wiz_NetInfo g_net_info =
                 0x48, 0x60, 0x00, 0x00,
                 0x00, 0x00, 0x00, 0x00,
                 0x00, 0x00, 0x88, 0x88},             // DNS6 server
-        .ipmode = 0
+        .ipmode = NETINFO_STATIC_ALL
 };
 
 uint8_t tcp_client_destip[] = {
@@ -128,10 +125,6 @@ uint8_t tcp_client_destip6[] = {
 uint16_t tcp_client_destport = PORT_TCP_CLIENT_DEST;
 
 uint16_t tcp_client_destport6 = PORT_TCP_CLIENT6_DEST;
-
-static uint8_t g_ethernet_buf[ETHERNET_BUF_MAX_SIZE] = {
-    0,
-}; // common buffer
 
 /* Loopback */
 static uint8_t g_tcp_server_buf[ETHERNET_BUF_MAX_SIZE] = {
@@ -156,9 +149,6 @@ static uint8_t g_tcp_server_dual_buf[ETHERNET_BUF_MAX_SIZE] = {
     0,
 };
 
-/* DHCP */
-static uint8_t g_dhcp_get_ip_flag = 0;
-
 /* Timer */
 static volatile uint16_t g_msec_cnt = 0;
 
@@ -169,11 +159,6 @@ static volatile uint16_t g_msec_cnt = 0;
  */
 /* Clock */
 static void set_clock_khz(void);
-
-/* DHCP */
-static void wizchip_dhcp4_init(void);
-static void wizchip_dhcp4_assign(void);
-static void wizchip_dhcp4_conflict(void);
 
 /* Timer */
 static void repeating_timer_callback(void);
@@ -209,92 +194,14 @@ int main()
 
     wizchip_1ms_timer_initialize(repeating_timer_callback);
 
-    #ifdef DHCP4
-    g_net_info.ipmode = NETINFO_DHCP_V4;
-    #else
-    g_net_info.ipmode = NETINFO_STATIC_V4;
-    #endif
-
-    #ifdef IPV6
-    #ifdef ADDRS_AUTO_CONFIG
-    g_net_info.ipmode |= NETINFO_SLAAC_V6;
-    #else
-    g_net_info.ipmode |= NETINFO_STATIC_V6;
-    #endif
-    #endif
-
     network_initialize(g_net_info);
 
     /* Get network information */
     print_network_information(g_net_info);
 
-    #ifdef ADDRS_AUTO_CONFIG
-    if(g_net_info.ipmode & NETINFO_SLAAC_V6)
-    {
-        if(1 != AddressAutoConfig_Init(&g_net_info))
-        {
-            printf("Address Auto Config failed\n");
-        }
-    }
-    #endif
-
-    #ifdef DHCP4
-    if (g_net_info.ipmode & NETINFO_DHCP_V4) // DHCP
-    {
-        wizchip_dhcp4_init();
-    }
-    #else
-    g_dhcp_get_ip_flag = 1;
-    #endif
-
     /* Infinite loop */
     while (1)
     {
-        #ifdef DHCP4
-        /* Assigned IP through DHCP */
-        if (g_net_info.ipmode & NETINFO_DHCP_V4)
-        {
-            retval = DHCPv4_run();
-
-            if (retval == DHCP_IP_LEASED)
-            {
-                if (g_dhcp_get_ip_flag == 0)
-                {
-                    printf(" DHCP success\n");
-
-                    g_dhcp_get_ip_flag = 1;
-                }
-            }
-            else if (retval == DHCP_FAILED)
-            {
-                g_dhcp_get_ip_flag = 0;
-                dhcp_retry++;
-
-                if (dhcp_retry <= DHCP_RETRY_COUNT)
-                {
-                    printf(" DHCP timeout occurred and retry %d\n", dhcp_retry);
-                }
-            }
-
-            if (dhcp_retry > DHCP_RETRY_COUNT)
-            {
-                printf(" DHCP failed\n");
-
-                DHCPv4_stop();
-
-                while (1)
-                    ;
-            }
-
-            if(g_dhcp_get_ip_flag == 0)
-            {
-                wizchip_delay_ms(1000); // wait for 1 second
-            }
-        }
-        #endif
-
-        if(g_dhcp_get_ip_flag == 1)
-        {
 #ifdef TCP_SERVER
             /* TCP server loopback test */
             if ((retval = loopback_tcps(SOCKET_TCP_SERVER, g_tcp_server_buf, PORT_TCP_SERVER, AS_IPV4)) < 0)
@@ -307,6 +214,7 @@ int main()
 #endif
 #ifdef TCP_CLIENT
             /* TCP client loopback test */
+            static uint32_t tcp_client_cnt = 0;
             if ((retval = loopback_tcpc(SOCKET_TCP_CLIENT, g_tcp_client_buf, tcp_client_destip, tcp_client_destport, AS_IPV4)) < 0)
             {
                 printf(" loopback_tcpc error : %d\n", retval);
@@ -359,13 +267,12 @@ int main()
             /* TCP server dual loopback test */
             if ((retval = loopback_tcps(SOCKET_TCP_SERVER_DUAL, g_tcp_server_dual_buf, PORT_TCP_SERVER_DUAL, AS_IPDUAL)) < 0)
             {
-                printf(" loopback_tcps dual error : %d\n", retval);
+                printf(" loopback_tcps IPv6 error : %d\n", retval);
 
                 while (1)
                     ;
             }
 #endif
-        }
     }
 }
 
@@ -390,39 +297,6 @@ static void set_clock_khz(void)
     );
 }
 
-/* DHCP */
-static void wizchip_dhcp4_init(void)
-{
-    printf(" DHCP client running\n");
-
-    DHCPv4_init(SOCKET_DHCP, g_ethernet_buf);
-
-    reg_dhcpv4_cbfunc(wizchip_dhcp4_assign, wizchip_dhcp4_assign, wizchip_dhcp4_conflict);
-}
-
-static void wizchip_dhcp4_assign(void)
-{
-    getIPfromDHCPv4(g_net_info.ip);
-    getGWfromDHCPv4(g_net_info.gw);
-    getSNfromDHCPv4(g_net_info.sn);
-    getDNSfromDHCPv4(g_net_info.dns);
-
-    /* Network initialize */
-    network_initialize(g_net_info); // apply from DHCP
-
-    print_network_information(g_net_info);
-    printf(" DHCP leased time : %ld seconds\n", getDHCPv4Leasetime());
-}
-
-static void wizchip_dhcp4_conflict(void)
-{
-    printf(" Conflict IP from DHCP\n");
-
-    // halt or reset or any...
-    while (1)
-        ; // this example is halt.
-}
-
 /* Timer */
 static void repeating_timer_callback(void)
 {
@@ -431,7 +305,5 @@ static void repeating_timer_callback(void)
     if (g_msec_cnt >= 1000 - 1)
     {
         g_msec_cnt = 0;
-
-        DHCPv4_time_handler();
     }
 }

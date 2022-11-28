@@ -294,6 +294,7 @@ void print_network_information(wiz_NetInfo net_info)
 	print_ipv6_addr(" LLA ", net_info.lla);
 	print_ipv6_addr(" GUA ", net_info.gua);
 	print_ipv6_addr(" SUB6", net_info.sn6);
+    print_ipv6_addr(" DNS6", net_info.dns6);
     printf("==========================================================\n\n");
 }
 

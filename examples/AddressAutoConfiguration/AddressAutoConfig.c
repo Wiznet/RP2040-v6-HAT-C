@@ -92,6 +92,10 @@ uint8_t AddressAutoConfig_Init(wiz_NetInfo *netinfo)
 		{
 			printf(" Stateless DHCP Failed\r\n");
 		}
+
+		memcpy(&netinfo->dns6, DNS6_Address, sizeof(DNS6_Address));
+		ctlnetwork(CN_SET_NETINFO, netinfo);
+		print_network_information();
 	}
 	else if (MO_flag == SFAAC_DHCP6)
 	{
@@ -197,6 +201,7 @@ uint8_t Address_Auto_Config_SLDHCP(uint8_t sn, uint8_t *test_buf)
 					   DNS6_Address[12], DNS6_Address[13], DNS6_Address[14], DNS6_Address[15]);
 				toggle = 0;
 			}
+			close(7);
 			return 1;
 
 		case DHCP_FAILED:
@@ -291,6 +296,7 @@ uint8_t Address_Auto_Config_SFDHCP(uint8_t sn, uint8_t *test_buf, wiz_NetInfo *n
 					   DNS6_Address[12], DNS6_Address[13], DNS6_Address[14], DNS6_Address[15]);
 				toggle = 0;
 			}
+			close(7);
 			return 1;
 
 		case DHCP_FAILED:
