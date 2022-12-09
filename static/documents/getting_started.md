@@ -58,7 +58,7 @@ If you want to modify the code that MCU-dependent and use a MCU other than **RP2
 
 port is located in the '**RP2040-v6-HAT-C/port/**' directory.
 
-- [**io6Library**][link-port_iolibrary_driver]
+- [**io6Library**][link-port_io6library]
 - [**mbedtls**][link-port_mbedtls]
 - [**timer**][link-port_timer]
 
