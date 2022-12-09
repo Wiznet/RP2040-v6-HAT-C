@@ -1,6 +1,6 @@
 # Getting Started
 
-These sections will guide you through a series of steps from configuring development environment to running RP2040 & Wx6x00 ethernet examples.
+These sections will guide you through a series of steps from configuring development environment to running RP2040 & W6x00 ethernet examples.
 
 - [**Hardware Requirements**](#hardware_requirements)
 - [**Development Environment Configuration**](#development_environment_configuration)
@@ -12,7 +12,7 @@ These sections will guide you through a series of steps from configuring develop
 <a name="hardware_requirements"></a>
 ## Hardware Requirements
 
-- **WIZnet 6x00 Series Evaluation Pico Board**
+- **WIZnet W6x00 Series Evaluation Pico Board**
     - [**W6100-EVB-Pico**][link-w6100-evb-pico]
 - **Desktop** or **Laptop**
 - **USB Type-B Micro 5 Pin Cable**
@@ -42,7 +42,7 @@ Examples are available at '**RP2040-v6-HAT-C/examples/**' directory. As of now, 
 
 Note that **io6Library**, **mbedtls**, **pico-sdk** are needed to run ethernet examples.
 
-- **io6Library** library supports IPv4 and IPv6 and can be applied to WIZnet's W6x00 Ethernet chip.
+- **io6Library** library supports IPv4 and IPv6 and can be applied to WIZnet's W6x00 ethernet chip.
 - **mbedtls** library supports additional algorithms and support related to SSL and TLS connections.
 - **pico-sdk** is made available by Pico to enable developers to build software applications for the Pico platform.
 - **pico-extras** has additional libraries that are not yet ready for inclusion the Pico SDK proper, or are just useful but don't necessarily belong in the Pico SDK.
