@@ -39,6 +39,7 @@ The ethernet examples were tested by configuring the development environment for
 Examples are available at '**RP2040-v6-HAT-C/examples/**' directory. As of now, following examples are provided.
 
 - [**Loopback**][link-loopback]
+- [**AddressAutoConfiguration**][link-AddressAutoConfiguration]
 
 Note that **io6Library**, **mbedtls**, **pico-sdk** are needed to run ethernet examples.
 
@@ -113,6 +114,7 @@ Link
 [link-w6100-evb-pico]: https://docs.wiznet.io/Product/iEthernet/W6100/w6100-evb-pico
 [link-getting_started_with_raspberry_pi_pico]: https://datasheets.raspberrypi.org/pico/getting-started-with-pico.pdf
 [link-loopback]: https://github.com/Wiznet/RP2040-v6-HAT-C/tree/main/examples/loopback
+[link-AddressAutoConfiguration]: https://github.com/Wiznet/RP2040-v6-HAT-C/tree/main/examples/AddressAutoConfiguration
 [link-io6library]: https://github.com/Wiznet/io6Library
 [link-mbedtls]: https://github.com/ARMmbed/mbedtls
 [link-pico_sdk]: https://github.com/raspberrypi/pico-sdk
