@@ -273,6 +273,15 @@ void network_initialize(wiz_NetInfo net_info)
     ctlnetwork(CN_SET_NETINFO, (void *)&net_info);
 }
 
+void print_ipv6_addr(uint8_t* name, uint8_t* ip6addr)
+{
+	printf("%s        : ", name);
+	printf("%04X:%04X", ((uint16_t)ip6addr[0] << 8) | ((uint16_t)ip6addr[1]), ((uint16_t)ip6addr[2] << 8) | ((uint16_t)ip6addr[3]));
+	printf(":%04X:%04X", ((uint16_t)ip6addr[4] << 8) | ((uint16_t)ip6addr[5]), ((uint16_t)ip6addr[6] << 8) | ((uint16_t)ip6addr[7]));
+	printf(":%04X:%04X", ((uint16_t)ip6addr[8] << 8) | ((uint16_t)ip6addr[9]), ((uint16_t)ip6addr[10] << 8) | ((uint16_t)ip6addr[11]));
+	printf(":%04X:%04X\r\n", ((uint16_t)ip6addr[12] << 8) | ((uint16_t)ip6addr[13]), ((uint16_t)ip6addr[14] << 8) | ((uint16_t)ip6addr[15]));
+}
+
 void print_network_information(wiz_NetInfo net_info)
 {
     uint8_t tmp_str[8] = {
@@ -296,13 +305,4 @@ void print_network_information(wiz_NetInfo net_info)
 	print_ipv6_addr(" SUB6", net_info.sn6);
     print_ipv6_addr(" DNS6", net_info.dns6);
     printf("==========================================================\n\n");
-}
-
-void print_ipv6_addr(uint8_t* name, uint8_t* ip6addr)
-{
-	printf("%s        : ", name);
-	printf("%04X:%04X", ((uint16_t)ip6addr[0] << 8) | ((uint16_t)ip6addr[1]), ((uint16_t)ip6addr[2] << 8) | ((uint16_t)ip6addr[3]));
-	printf(":%04X:%04X", ((uint16_t)ip6addr[4] << 8) | ((uint16_t)ip6addr[5]), ((uint16_t)ip6addr[6] << 8) | ((uint16_t)ip6addr[7]));
-	printf(":%04X:%04X", ((uint16_t)ip6addr[8] << 8) | ((uint16_t)ip6addr[9]), ((uint16_t)ip6addr[10] << 8) | ((uint16_t)ip6addr[11]));
-	printf(":%04X:%04X\r\n", ((uint16_t)ip6addr[12] << 8) | ((uint16_t)ip6addr[13]), ((uint16_t)ip6addr[14] << 8) | ((uint16_t)ip6addr[15]));
 }
