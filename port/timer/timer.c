@@ -42,6 +42,8 @@ bool wizchip_1ms_timer_callback(struct repeating_timer *t)
     {
         callback_ptr();
     }
+
+    return true;
 }
 
 /* Delay */
