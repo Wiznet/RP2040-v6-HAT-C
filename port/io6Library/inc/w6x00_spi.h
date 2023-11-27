@@ -204,4 +204,13 @@ void network_initialize(wiz_NetInfo net_info);
  */
 void print_network_information(wiz_NetInfo net_info);
 
+/*! \brief Print IPv6 Address
+ *  \ingroup W6x00_spi
+ *
+ *  Print IPv6 Address.
+ *
+ *  \param net_info network information.
+ */
+void print_ipv6_addr(uint8_t* name, uint8_t* ip6addr);
+
 #endif /* _W6x00_SPI_H_ */
